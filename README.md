@@ -18,7 +18,7 @@ https://github.com/nektos/act
 The pipeline is using following 3rd party Actions
 
 * [dflook/terraform-github-actions](https://github.com/dflook/terraform-github-actions): Terraform related tasks such `terraform plan`, `terraform fmt`, `terraform apply`, etc.
-* [codigube/github-action-notify-slack](https://github.com/codigube/github-action-notify-slack): Slack notification
+* [codigube/github-actions-notify-slack](https://github.com/codigube/github-actions-notify-slack): Slack notification
 
 ## Setup Secrets
 
