@@ -1,0 +1,85 @@
+name: Terraform Master
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+    - 'terraform/**'
+
+jobs:
+
+  terraform-master-merge:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+      
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: terraform-fmt
+        uses: dflook/terraform-fmt-check@v1
+        with:
+          path: terraform
+
+      - name: terraform-plan-dev
+        uses: dflook/terraform-plan@v1
+        with:
+          path: terraform/dev/demo-cicd
+          label: dev
+          
+      - name: terraform-plan-stage
+        uses: dflook/terraform-plan@v1
+        with:
+          path: terraform/stage/demo-cicd
+          label: stage
+
+      - name: slack-notification-for-failure
+        uses: codigube/github-actions-notify-slack@v1.0.0
+        if: failure() || cancelled()
+        env:
+          SLACK_COLOR: '#DF5A49'
+          SLACK_MESSAGE: 'Job ${{ github.job }} failed'
+
+      - name: slack-notification-for-success
+        uses: codigube/github-actions-notify-slack@v1.0.0
+        if: success()
+        env:
+          SLACK_MESSAGE: 'Job ${{ github.job }} succeeded'
+
+  terraform-deploy-dev:
+    needs: terraform-master-merge
+
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      SLACK_CHANNEL: ta-aws-poc-ops
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: terraform-apply-dev
+        uses: dflook/terraform-apply@v1
+        with:
+          path: terraform/dev/demo-cicd
+          label: dev
+          auto_approve: true
+    
+      - name: slack-notification-for-failure
+        uses: codigube/github-actions-notify-slack@v1.0.0
+        if: failure() || cancelled()
+        env:
+          SLACK_COLOR: '#DF5A49'
+          SLACK_MESSAGE: 'Job ${{ github.job }} failed'
+
+      - name: slack-notification-for-success
+        uses: codigube/github-actions-notify-slack@v1.0.0
+        if: success()
+        env:
+          SLACK_MESSAGE: 'Job ${{ github.job }} succeeded'
