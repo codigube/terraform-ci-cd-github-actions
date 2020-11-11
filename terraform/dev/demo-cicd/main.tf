@@ -6,7 +6,7 @@ terraform {
   }
 
   backend "s3" {
-    key            = "github-action-demo/dev/terraform.tfstate"
+    key            = "github-actions-cicd/dev/terraform.tfstate"
     bucket         = "tf-backend-terraform-state"
     dynamodb_table = "tf-backend-terraform-state"
     acl            = "bucket-owner-full-control"
@@ -20,7 +20,7 @@ provider "aws" {
 
 locals {
   environment = "dev"
-  name_prefix = "github-action-demo"
+  name_prefix = "github-actions-cicd"
 
   tags = {
     terraform   = "True"
